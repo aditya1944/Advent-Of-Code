@@ -16,66 +16,57 @@ public class Main {
         }
     
         // count all peripheral trees
-        var count = (matx.length * 2) + (2 * (matx[0].length-2));
+        var maxScore = 1;
         
         for (int rowIndex = 1; rowIndex < matx.length-1; rowIndex+=1) {
             for (int colIndex = 1; colIndex < matx[0].length-1; colIndex+=1) {
-                if (isVisible(matx, rowIndex, colIndex)) {
-                    count +=1;
-                }
+                maxScore = Math.max(calculateScore(matx, rowIndex, colIndex), maxScore);
             }
         }
-        System.out.println(count);
+        System.out.println(maxScore);
     }
 
-    private static boolean isVisible(int[][] matx, int rowIndex, int colIndex) {
+    private static int calculateScore(int[][] matx, int rowIndex, int colIndex) {
         var height = matx[rowIndex][colIndex];
         // go left
-        int currColIndex = colIndex-1, currRowIndex = rowIndex;
-        while (true) {
-            if (matx[rowIndex][currColIndex] >= height) {
+        int currColIndex = colIndex, currRowIndex = rowIndex;
+        int left = 0, right = 0, up = 0, down = 0;
+        while (currColIndex-1 >= 0) {
+            left +=1;
+            if (matx[currRowIndex][currColIndex-1] >= height) {
                 break;
-            }
-            if (currColIndex == 0) {
-                return true;
             }
             currColIndex-=1;
         }
         // go right
-        currColIndex = colIndex+1;
-
-        while (true) {
-            if (matx[rowIndex][currColIndex] >= height) {
+        currColIndex = colIndex;
+        while (currColIndex+1 < matx[0].length ) {
+            right += 1;
+            if (matx[currRowIndex][currColIndex+1] >= height) {
                 break;
-            }
-            if (currColIndex == matx[0].length-1) {
-                return true;
             }
             currColIndex+=1;
         }
         // go up
-        currRowIndex = rowIndex-1;
-        while (true) {
-            if (matx[currRowIndex][colIndex] >= height) {
+        currRowIndex = rowIndex;
+        currColIndex = colIndex;
+        while (currRowIndex-1 >= 0) {
+            up += 1;
+            if (matx[currRowIndex-1][currColIndex] >= height) {
                 break;
-            }
-            if (currRowIndex == 0) {
-                return true;
             }
             currRowIndex-=1;
         }
         // go down
-        currRowIndex = rowIndex+1;
-        while (true) {
-            if (matx[currRowIndex][colIndex] >= height) {
+        currRowIndex = rowIndex;
+        while (currRowIndex+1 < matx.length ) {
+            down += 1;
+            if (matx[currRowIndex+1][currColIndex] >= height) {
                 break;
-            }
-            if (currRowIndex == matx.length-1) {
-                return true;
             }
             currRowIndex+=1;
         }
-        return false;
+        return up * down * left * right;
     }
 
 }
