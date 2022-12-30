@@ -11,83 +11,90 @@ import (
 
 func main() {
 
-	readFile, err := os.Open("../../input");
+	readFile, err := os.Open("../../input")
 	if err != nil {
-		log.Fatalf("file could not open, err : %v", err);
+		log.Fatalf("file could not open, err : %v", err)
 	}
-	fileScanner := bufio.NewScanner(readFile);
+	fileScanner := bufio.NewScanner(readFile)
 
-	fileScanner.Split(bufio.ScanLines);
+	fileScanner.Split(bufio.ScanLines)
 
 	var (
-		matx = buildMatx()
+		matx        = buildMatx()
 		registerVal = 1
-		cycle = 0
+		cycle       = 0
 		crtRowIndex = 0
 		crtColIndex = 0
 	)
 
-
-
 	for fileScanner.Scan() {
-		line := fileScanner.Text();
-		tokens := strings.Split(line, " ");
-
-		
+		line := fileScanner.Text()
+		tokens := strings.Split(line, " ")
 
 		switch tokens[0] {
 		case "addx":
-			draw(crtRowIndex, crtColIndex, registerVal, &matx)
+			ch := make(chan int)
+			go func(ch chan int) {
+				draw(crtRowIndex, crtColIndex, registerVal, &matx)
+				ch <- 1
+			}(ch)
 
-			cycle +=1
+			cycle += 1
 
-			crtColIndex += 1
-			if crtColIndex == 40 {
-				crtRowIndex += 1
-				crtColIndex = 0;
-			}
-
-
-			draw(crtRowIndex, crtColIndex, registerVal, &matx)
-
-
-			cycle +=1
-
+			<-ch
 
 			crtColIndex += 1
 			if crtColIndex == 40 {
 				crtRowIndex += 1
-				crtColIndex = 0;
+				crtColIndex = 0
 			}
 
+			go func(ch chan int) {
+				draw(crtRowIndex, crtColIndex, registerVal, &matx)
+				ch <- 1
+			}(ch)
+
+			cycle += 1
+
+			<-ch
+
+			crtColIndex += 1
+			if crtColIndex == 40 {
+				crtRowIndex += 1
+				crtColIndex = 0
+			}
 
 			inputVal, err := strconv.Atoi(tokens[1])
 			if err != nil {
 				log.Fatalf("error in reading val, err : %v", err)
 			}
 
-			registerVal += inputVal;
+			registerVal += inputVal
 
-			
-			draw(crtRowIndex, crtColIndex, registerVal, &matx)
 		case "noop":
-			
-			draw(crtRowIndex, crtColIndex, registerVal, &matx)
 
-			cycle+=1
+			ch := make(chan int)
+			go func(ch chan int) {
+				draw(crtRowIndex, crtColIndex, registerVal, &matx)
+				ch <- 1
+			}(ch)
+
+			cycle += 1
+
+			<-ch
+
 			crtColIndex += 1
 			if crtColIndex == 40 {
 				crtRowIndex += 1
-				crtColIndex = 0;
+				crtColIndex = 0
 			}
 
-			draw(crtRowIndex, crtColIndex, registerVal, &matx)
 		}
 	}
 
 	for _, row := range matx {
 		for _, val := range row {
-			fmt.Printf("%q ",val)
+			fmt.Printf("%q ", val)
 		}
 		fmt.Println()
 	}
@@ -100,20 +107,19 @@ func draw(crtR, crtC, sprite int, matx *[6][40]byte) {
 		matx[crtR][crtC] = '#'
 	} else if crtC == sprite {
 		matx[crtR][crtC] = '#'
-	} else if crtC == sprite+1{
+	} else if crtC == sprite+1 {
 		matx[crtR][crtC] = '#'
 	}
 }
 
-
 func buildMatx() [6][40]byte {
-	matx := [6][40]byte{};
+	matx := [6][40]byte{}
 
-	for rowIndex, row := range matx{
+	for rowIndex, row := range matx {
 		for colIndex := range row {
-			matx[rowIndex][colIndex] = '.';
-		} 
+			matx[rowIndex][colIndex] = '.'
+		}
 	}
 
-	return matx;
+	return matx
 }
